@@ -4,24 +4,30 @@ import pickle
 import pandas as pd
 from io import BytesIO
 import tempfile
-import gdown
+import requests
+from urllib.parse import urlparse, parse_qs
 
 from automate_약가파일 import generate_drug_info_sheet
 
-@st.cache_resource
-def download_pickle_from_drive(file_id, file_name):
-    url = "https://drive.google.com/drive/folders/1NCNDXVfOd1HH_-YfBtSUaWJK5ZIsomJ5"
-    gdown.download(url, file_name, quiet=False)
+# Use Streamlit's secrets management for sensitive data
+FOLDER_URL = st.secrets["google_drive_folder_url"]
 
-def load_pickle_data(filenames):
+def download_file_from_drive(file_id):
+    url = f"https://drive.google.com/drive/folders/1NCNDXVfOd1HH_-YfBtSUaWJK5ZIsomJ5/{file_id}.pkl"
+    response = requests.get(url)
+    return BytesIO(response.content)
+
+def load_pickle_data(file_ids):
     variables = {}
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        for filename in filenames:
-            filename = os.path.join(f"{filename}.pkl")
-            download_pickle_from_drive(filename)
-            with open(filename, 'rb') as f:
-                variables[filename] = pickle.load(f)
+    for filename, file_id in file_ids.items():
+        file_content = download_file_from_drive(file_id)
+        variables[filename] = pickle.load(file_content)
     return variables
+
+def get_file_id_from_url(url):
+    parsed_url = urlparse(url)
+    file_id = parse_qs(parsed_url.query).get('id')
+    return file_id[0] if file_id else None
 
 def get_compound_list(variables):
     compound_dict = variables['dict_main_compound_infos_total_repr']
@@ -30,20 +36,22 @@ def get_compound_list(variables):
 def main():
     st.title("Drug Price File Automation Tool")
 
-    # Dictionary of variable names and their corresponding Google Drive file IDs
-    filenames = [
-        'compound_id_and_dates_by_product_id_all_period',
-        'continuous_events_by_product_id',
-        'continuous_events_str_by_product_id',
-        'dates_for_reimbursement_publication',
-        'dict_main_compound_infos_total_repr',
-        'product_ids_total_period',
-        'product_info_by_id',
-        'reimbursement_events_and_dates_by_product_id_all_period'
-    ]
+    # File IDs dictionary (you should update these with your actual file IDs)
+    file_ids = {
+        'compound_id_and_dates_by_product_id_all_period':
+            'compound_id_and_dates_by_product_id_all_period',
+        'continuous_events_by_product_id': 'continuous_events_by_product_id',
+        'continuous_events_str_by_product_id': 'continuous_events_str_by_product_id',
+        'dates_for_reimbursement_publication': 'dates_for_reimbursement_publication',
+        'dict_main_compound_infos_total_repr': 'dict_main_compound_infos_total_repr',
+        'product_ids_total_period': 'product_ids_total_period',
+        'product_info_by_id': 'product_info_by_id',
+        'reimbursement_events_and_dates_by_product_id_all_period':
+            'reimbursement_events_and_dates_by_product_id_all_period'
+    }
 
     # Load pickle data
-    variables = load_pickle_data(filenames)
+    variables = load_pickle_data(file_ids)
 
     # Get the list of compounds
     compound_list = get_compound_list(variables)
