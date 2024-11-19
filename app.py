@@ -31,36 +31,6 @@ def download_folder_from_drive(output_path):
     gdown.download_folder(url=FOLDER_URL, output=output_path, quiet=False)
     print(f"Download completed.")
 
-def load_pickle_file(file_path):
-    print(f"Loading pickle file: {file_path}")
-    with open(file_path, 'rb') as f:
-        data = pickle.load(f)
-    print(f"Loaded pickle file: {file_path}")
-    return data
-
-@st.cache_data
-def load_pickle_data(filenames):
-    print("Running load_pickle_data...")
-    download_folder_from_drive(CACHE_DIR)
-    variables = {}
-    progress_bar = st.progress(0)
-    status_text = st.empty()
-    for i, filename in enumerate(filenames):
-        file_path = os.path.join(CACHE_DIR, f"{filename}.pkl")
-        if os.path.exists(file_path):
-            variables[filename] = load_pickle_file(file_path)
-            status_text.text(f"로딩 중: {file_name_translations.get(filename, filename)}")
-        else:
-            print(f"Warning: File not found: {file_path}")
-            st.warning(f"파일을 찾을 수 없습니다: {file_path}")
-        # 진행 상황 업데이트
-        progress = (i + 1) / len(filenames)
-        progress_bar.progress(progress)
-    progress_bar.empty()
-    status_text.empty()
-    print("Finished loading all pickle files.")
-    return variables
-
 def get_compound_list(variables):
     compound_dict = variables['dict_main_compound_infos_total_repr']
     return [f"{key} ({value['주성분이름']})" for key, value in compound_dict.items()]
@@ -72,18 +42,8 @@ def main():
     if 'selected_ids' not in st.session_state:
         st.session_state.selected_ids = []
 
-    filenames = [
-        'compound_id_and_dates_by_product_id_all_period',
-        'continuous_events_by_product_id',
-        'continuous_events_str_by_product_id',
-        'dates_for_reimbursement_publication',
-        'dict_main_compound_infos_total_repr',
-        'product_ids_total_period',
-        'product_info_by_id',
-        'reimbursement_events_and_dates_by_product_id_all_period'
-    ]
-
-    variables = load_pickle_data(filenames)
+    with open('variables_merged_from_2009_to_2024.pkl', 'rb') as f:
+        variables = pickle.load(f)
     compound_list = get_compound_list(variables)
 
     id_selection_method = st.radio(
