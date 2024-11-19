@@ -24,20 +24,42 @@ file_name_translations = {
 def download_and_load_pickle(file_id):
     """Download pickle file from Google Drive and load it"""
     try:
-        # Use temporary file instead of .cache directory
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             url = f"https://drive.google.com/uc?id={file_id}"
-            gdown.download(url=url, output=temp_file.name, quiet=False)
             
-            # Load the pickle file
+            # 다운로드 상태 표시
+            st.write(f"파일 다운로드를 시작합니다... URL: {url}")
+            
+            # 다운로드 시도
+            success = gdown.download(url=url, output=temp_file.name, quiet=False)
+            
+            if not success:
+                st.error("파일 다운로드에 실패했습니다.")
+                return None
+                
+            # 파일 크기 확인
+            file_size = os.path.getsize(temp_file.name)
+            st.write(f"다운로드된 파일 크기: {file_size} bytes")
+            
+            if file_size == 0:
+                st.error("다운로드된 파일이 비어있습니다.")
+                return None
+                
+            # pickle 파일 로드 시도
             with open(temp_file.name, 'rb') as f:
                 variables = pickle.load(f)
-            
-            # Clean up the temporary file
+                
+            # 정상적으로 로드되었는지 확인
+            if variables is None:
+                st.error("pickle 파일이 비어있습니다.")
+                return None
+                
+            # 임시 파일 삭제
             os.unlink(temp_file.name)
             return variables
+            
     except Exception as e:
-        st.error(f"파일 다운로드 또는 로딩 중 오류 발생: {str(e)}")
+        st.error(f"상세 오류 내용: {str(e)}")
         return None
 
 # @st.cache_resource
