@@ -1,68 +1,15 @@
-import streamlit as st
+"""App.py"""
 import os
 import pickle
 from io import BytesIO
 import gdown
 
-import pandas as pd
+import streamlit as st
 
 from automate_약가파일 import generate_drug_info_sheet
 
 FOLDER_URL = st.secrets["google_drive_folder_url"]
 CACHE_DIR = ".cache"  # Permanent cache directory
-
-# 파일 이름과 한글 번역을 매핑하는 딕셔너리
-file_name_translations = {
-    'compound_id_and_dates_by_product_id_all_period': '제품별 성분 ID 및 날짜 정보',
-    'continuous_events_by_product_id': '제품별 연속 이벤트',
-    'continuous_events_str_by_product_id': '제품별 연속 이벤트 문자열',
-    'dates_for_reimbursement_publication': '급여 고시 날짜',
-    'dict_main_compound_infos_total_repr': '주요 성분 정보 사전',
-    'product_ids_total_period': '전체 기간 제품 ID',
-    'product_info_by_id': '제품별 정보',
-    'reimbursement_events_and_dates_by_product_id_all_period': '제품별 급여 이벤트 및 날짜'
-}
-
-@st.cache_resource
-def download_folder_from_drive(output_path):
-    """Download the folder from Google Drive and cache it"""
-    print(f"Running download_folder_from_drive to {output_path}")
-    if not os.path.exists(output_path):
-        os.makedirs(output_path)
-        print(f"Created directory: {output_path}")
-
-    print(f"Downloading folder from Google Drive...")
-    gdown.download_folder(url=FOLDER_URL, output=output_path, quiet=False)
-    print(f"Download completed.")
-
-@st.cache_resource
-def load_variables():
-    """Load variables from the cached pickle file"""
-    cache_path = os.path.join(CACHE_DIR, "variables_merged_from_2009_to_2024.pkl")
-    # Download the folder if it doesn't exist in cache
-    if not os.path.exists(cache_path):
-        download_folder_from_drive(CACHE_DIR)
-    # Load the pickle file
-    try:
-        with open(cache_path, 'rb') as f:
-            return pickle.load(f)
-    except Exception as e:
-        st.error(f"Error loading variables: {str(e)}")
-        return None
-
-def get_compound_list(variables):
-    compound_dict = variables['dict_main_compound_infos_total_repr']
-    return [f"{key} ({value['주성분이름']})" for key, value in compound_dict.items()]
-import streamlit as st
-import os
-import pickle
-from io import BytesIO
-import gdown
-import pandas as pd
-from automate_약가파일 import generate_drug_info_sheet
-
-FOLDER_URL = st.secrets["google_drive_folder_url"]
-CACHE_DIR = ".cache"
 
 # 파일 이름과 한글 번역을 매핑하는 딕셔너리
 file_name_translations = {
