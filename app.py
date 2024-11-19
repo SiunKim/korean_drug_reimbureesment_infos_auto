@@ -8,9 +8,6 @@ import streamlit as st
 
 from automate_약가파일 import generate_drug_info_sheet
 
-FOLDER_URL = st.secrets["google_drive_folder_url"]
-CACHE_DIR = ".cache"  # Permanent cache directory
-
 # 파일 이름과 한글 번역을 매핑하는 딕셔너리
 file_name_translations = {
     'compound_id_and_dates_by_product_id_all_period': '제품별 성분 ID 및 날짜 정보',
@@ -23,24 +20,41 @@ file_name_translations = {
     'reimbursement_events_and_dates_by_product_id_all_period': '제품별 급여 이벤트 및 날짜'
 }
 
-@st.cache_resource
-def download_folder_from_drive(output_path):
-    """Download the folder from Google Drive and cache it"""
-    if not os.path.exists(output_path):
-        os.makedirs(output_path)
-    gdown.download_folder(url=FOLDER_URL, output=output_path, quiet=False)
+
+FOLDER_URL = st.secrets["google_drive_folder_url"]
+CACHE_DIR = ".cache"
+
+def download_single_file(file_id, output_path):
+    """Download a single file from Google Drive"""
+    url = f"https://drive.google.com/uc?id={file_id}"
+    output = os.path.join(output_path, "variables_merged_from_2009_to_2024.pkl")
+    try:
+        gdown.download(url=url, output=output, quiet=False)
+        return True
+    except Exception as e:
+        st.error(f"파일 다운로드 중 오류 발생: {str(e)}")
+        return False
 
 @st.cache_resource
 def load_variables():
     """Load variables from the cached pickle file"""
     cache_path = os.path.join(CACHE_DIR, "variables_merged_from_2009_to_2024.pkl")
+    if not os.path.exists(CACHE_DIR):
+        os.makedirs(CACHE_DIR)
     if not os.path.exists(cache_path):
-        download_folder_from_drive(CACHE_DIR)
+        # Google Drive 파일 ID를 직접 사용
+        file_id = st.secrets.get("pickle_file_id")  # secrets.toml에서 파일 ID를 가져옴
+        if not file_id:
+            st.error("파일 ID가 설정되지 않았습니다.")
+            return None
+        success = download_single_file(file_id, CACHE_DIR)
+        if not success:
+            return None
     try:
         with open(cache_path, 'rb') as f:
             return pickle.load(f)
     except Exception as e:
-        st.error(f"Error loading variables: {str(e)}")
+        st.error(f"변수 로딩 중 오류 발생: {str(e)}")
         return None
 
 def get_compound_list(variables):
