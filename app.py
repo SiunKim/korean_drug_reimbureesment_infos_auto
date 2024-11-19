@@ -40,7 +40,7 @@ def download_and_load_pickle(file_id):
         st.error(f"파일 다운로드 또는 로딩 중 오류 발생: {str(e)}")
         return None
 
-@st.cache_resource
+# @st.cache_resource
 def load_variables():
     """Load variables from Google Drive"""
     file_id = st.secrets.get("pickle_file_id")
