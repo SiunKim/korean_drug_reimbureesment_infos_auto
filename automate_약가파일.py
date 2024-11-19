@@ -6,16 +6,6 @@ from openpyxl.styles import Alignment, PatternFill, Font
 from openpyxl.utils import get_column_letter
 from collections import defaultdict
 
-def load_pickle_data(save_dir):
-    """Load pickle data from the specified directory"""
-    variables = {}
-    for filename in os.listdir(save_dir):
-        if filename.endswith('.pkl'):
-            var_name = filename[:-4]  # Remove '.pkl'
-            with open(os.path.join(save_dir, filename), 'rb') as f:
-                variables[var_name] = pickle.load(f)
-    return variables
-
 def generate_drug_info_sheet(compound_ids, variables):
     """Generate drug info sheet with enhanced styling and company count"""
     # List to store result data
@@ -119,8 +109,9 @@ def generate_drug_info_sheet(compound_ids, variables):
 
 if __name__ == "__main__":
     # Load pickle data
-    save_dir = "pickle_save_tmp_0911"
-    variables = load_pickle_data(save_dir)
+    save_dir = "pickle_save_tmp_0911/variables_merged_from_2009_to_2024.pkl"
+    with open(save_dir, 'rb') as f:
+        variables = pickle.load(f)
 
     # Define compound IDs
     compound_ids = [
