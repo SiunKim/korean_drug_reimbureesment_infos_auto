@@ -25,9 +25,9 @@ def download_and_load_pickle(file_id):
     """Download pickle file from Google Drive and load it"""
     try:
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-            url = f"https://drive.google.com/uc?id={file_id}"
+            # 다운로드 URL 형식 변경
+            url = f"https://drive.google.com/file/d/{file_id}/view?usp=sharing"
             
-            # 다운로드 상태 표시
             st.write(f"파일 다운로드를 시작합니다... URL: {url}")
             
             # gdown 옵션 수정
@@ -35,24 +35,24 @@ def download_and_load_pickle(file_id):
                 url=url, 
                 output=temp_file.name, 
                 quiet=False,
-                fuzzy=True  # URL 매칭을 좀 더 유연하게
+                fuzzy=True,
+                use_cookies=False  # 쿠키 사용 비활성화
             )
             
             if not success:
-                st.error("일반 다운로드 실패, 대체 방법 시도...")
-                # 대체 다운로드 방법 시도
+                st.error("첫 번째 방법 실패, 두 번째 방법 시도...")
+                direct_url = f"https://drive.google.com/uc?export=download&id={file_id}"
                 success = gdown.download(
-                    url=f"https://drive.google.com/file/d/{file_id}/view",
+                    url=direct_url,
                     output=temp_file.name,
                     quiet=False,
                     fuzzy=True
                 )
-                
-            if not success:
-                st.error("파일 다운로드에 실패했습니다. 파일 공유 설정을 확인해주세요.")
-                return None
             
-            # 이하 코드는 동일...
+            if not success:
+                st.error(f"파일 다운로드에 실패했습니다. \nURL: {url}\nFile ID: {file_id}")
+                return None
+                
             file_size = os.path.getsize(temp_file.name)
             st.write(f"다운로드된 파일 크기: {file_size} bytes")
             
@@ -62,12 +62,14 @@ def download_and_load_pickle(file_id):
                 
             with open(temp_file.name, 'rb') as f:
                 variables = pickle.load(f)
-                
+            
             os.unlink(temp_file.name)
             return variables
             
     except Exception as e:
         st.error(f"상세 오류 내용: {str(e)}")
+        import traceback
+        st.error(f"상세 스택 트레이스: {traceback.format_exc()}")
         return None
 
 # @st.cache_resource
