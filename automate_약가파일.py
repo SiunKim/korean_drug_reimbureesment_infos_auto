@@ -107,24 +107,24 @@ def generate_drug_info_sheet(compound_ids, variables):
 
     return wb
 
-if __name__ == "__main__":
-    # Load pickle data
-    save_dir = "pickle_save_tmp_0911/variables_merged_from_2009_to_2024.pkl"
-    with open(save_dir, 'rb') as f:
-        variables = pickle.load(f)
+# if __name__ == "__main__":
+#     # Load pickle data
+#     save_dir = "pickle_save_tmp_0911/variables_merged_from_2009_to_2024.pkl"
+#     with open(save_dir, 'rb') as f:
+#         variables = pickle.load(f)
 
-    # Define compound IDs
-    compound_ids = [
-        '148630ALQ', '148631ALQ', '148601ATB', '148601ATD', '148602APD', 
-        '148602ATB', '148602ATD', '148603ATB', '148604ATB', '190031ALQ', 
-        '190001ATB', '190003ATD', '190004ATB', '190004ATD', '190005ATB', 
-        '190006ATD', '224501ACH', '224503ACH', '224504ACH', '224505ACH', 
-        '385203ACR', '385203ATR', '385204ACR', '385204ATR', '385205ACR', 
-        '385205ATR', '165301ATB', '165303ATB', '165305ATB', '165310ATB', 
-        '224506CPC', '224507CPC', '224508CPC', '643403CPC', '643404CPC'
-    ]
+#     # Define compound IDs
+#     compound_ids = [
+#         '148630ALQ', '148631ALQ', '148601ATB', '148601ATD', '148602APD', 
+#         '148602ATB', '148602ATD', '148603ATB', '148604ATB', '190031ALQ', 
+#         '190001ATB', '190003ATD', '190004ATB', '190004ATD', '190005ATB', 
+#         '190006ATD', '224501ACH', '224503ACH', '224504ACH', '224505ACH', 
+#         '385203ACR', '385203ATR', '385204ACR', '385204ATR', '385205ACR', 
+#         '385205ATR', '165301ATB', '165303ATB', '165305ATB', '165310ATB', 
+#         '224506CPC', '224507CPC', '224508CPC', '643403CPC', '643404CPC'
+#     ]
 
-    # Generate and save the Excel file
-    wb = generate_drug_info_sheet(compound_ids, variables)
-    wb.save('drug_info_sheet_styled_v3_치매_자동추출.xlsx')
-    print("Excel file has been generated successfully.")
+#     # Generate and save the Excel file
+#     wb = generate_drug_info_sheet(compound_ids, variables)
+#     wb.save('drug_info_sheet_styled_v3_치매_자동추출.xlsx')
+#     print("Excel file has been generated successfully.")
